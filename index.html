@@ -1,0 +1,195 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Quiz</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            /* Light background for readability */
+            color: #333;
+            /* Dark text for good contrast */
+            text-align: center;
+            padding: 20px;
+            margin-top: -20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        #question {
+            font-size: 3em;
+            margin: 40px;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            /* Stack buttons vertically */
+            align-items: center;
+            /* Center buttons horizontally */
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .options button {
+            width: 70px;
+            height: 70px;
+            font-size: 1.3rem;
+            /* Set width for buttons */
+            margin: 10px 0;
+            /* Space between buttons */
+        }
+
+        .options button:hover {
+            background-color: #ddd;
+        }
+
+        .options button:active {
+            background-color: #bbb;
+        }
+
+        .correct {
+            background-color: #4CAF50 !important;
+            color: white;
+        }
+
+        .wrong {
+            background-color: #f44336 !important;
+            color: white;
+        }
+
+        #score {
+            margin-top: 30px;
+            font-size: 1.4em;
+            color: #333;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="question">Loading question...</div>
+    <div class="options">
+        <button id="opt1"></button>
+        <button id="opt2"></button>
+        <button id="opt3"></button>
+        <button id="opt4"></button>
+    </div>
+    <div id="score">Score: 0/0</div>
+
+    <script>
+        // Tables: 12 to 19 and 27, Squares: 16 to 35, Cubes: 8 to 20
+        const tables = [12, 13, 14, 15, 16, 17, 18, 19, 27];
+        const squares = Array.from({ length: 20 }, (_, i) => i + 16); // Numbers 16 to 35
+        const cubes = Array.from({ length: 13 }, (_, i) => i + 8); // Numbers 8 to 20
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';  // Alphabet A to Z
+        let correctCount = 0;
+        let totalCount = 0;
+        let timer;
+
+        // Helper function to generate wrong answers similar to the correct answer
+        function generateSimilarOptions(correctAnswer) {
+            const options = [correctAnswer];
+            const unitDigit = correctAnswer % 10;
+
+            while (options.length < 4) {
+                let wrongAnswer = correctAnswer + Math.floor(Math.random() * 100) - 50;
+                // Ensure the wrong answer is close in value and has the same unit digit
+                if (wrongAnswer !== correctAnswer && (wrongAnswer % 10 === unitDigit) && wrongAnswer > 0) {
+                    options.push(wrongAnswer);
+                }
+            }
+            options.sort(() => Math.random() - 0.5); // Shuffle options
+            return options;
+        }
+
+        // Generate Random Question
+        function generateQuestion() {
+            const questionType = Math.random(); // Decide the question type
+
+            let questionText, correctAnswer;
+
+            if (questionType < 0.25) { // Table question
+                const table = tables[Math.floor(Math.random() * tables.length)];
+                const multiplier = Math.floor(Math.random() * 7) + 3; // Multiplier from 3 to 9
+                correctAnswer = table * multiplier;
+                questionText = `${table} x ${multiplier}?`;
+            } else if (questionType < 0.5) { // Square question
+                const num = squares[Math.floor(Math.random() * squares.length)];
+                correctAnswer = num * num;
+                questionText = `${num}<sup>2</sup>`;
+            } else if (questionType < 0.75) { // Cube question
+                const num = cubes[Math.floor(Math.random() * cubes.length)];
+                correctAnswer = num * num * num;
+                questionText = `${num}<sup>3</sup>`;
+            } else { // Alphabet place value question
+                const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)]; // Random letter
+                correctAnswer = randomLetter.charCodeAt(0) - 64; // Convert letter to place value (A = 1, B = 2, ...)
+                questionText = `${randomLetter}?`;
+            }
+
+            // Display question
+            document.getElementById('question').innerHTML = questionText;
+
+            // Generate similar options for the current question type
+            const options = generateSimilarOptions(correctAnswer);
+
+            // Display options
+            for (let i = 0; i < 4; i++) {
+                const button = document.getElementById(`opt${i + 1}`);
+                button.textContent = options[i];
+                button.className = ''; // Reset button styles
+                button.disabled = false; // Enable buttons for new question
+                button.onclick = () => checkAnswer(button, correctAnswer);
+            }
+
+            // Auto-change question after 4 seconds if no answer
+            clearTimeout(timer);
+            timer = setTimeout(generateQuestion, 4000);
+        }
+
+        // Check Answer
+        function checkAnswer(button, correctAnswer) {
+            clearTimeout(timer); // Clear the auto-next timer
+            totalCount++;
+
+            const allButtons = document.querySelectorAll('.options button');
+            allButtons.forEach(btn => btn.disabled = true); // Disable all buttons on answer
+
+            if (parseInt(button.textContent) === correctAnswer) {
+                button.className = 'correct';
+                correctCount++;
+            } else {
+                button.className = 'wrong';
+                // Highlight correct answer
+                allButtons.forEach(btn => {
+                    if (parseInt(btn.textContent) === correctAnswer) {
+                        btn.className = 'correct';
+                    }
+                });
+            }
+
+            document.getElementById('score').textContent = `Score: ${correctCount}/${totalCount}`;
+            setTimeout(generateQuestion, parseInt(button.textContent) === correctAnswer ? 1000 : 6000);
+        }
+
+        // Start Quiz
+        generateQuestion();
+    </script>
+</body>
+
+</html>
