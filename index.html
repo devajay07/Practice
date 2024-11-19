@@ -7,9 +7,9 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #f4f4f9;
+            background-color: #272727;
             /* Light background for readability */
-            color: #333;
+            color: #fafafa;
             /* Dark text for good contrast */
             text-align: center;
             padding: 20px;
@@ -22,17 +22,12 @@
             overflow: hidden;
         }
 
-        h1 {
-            font-size: 2.5em;
-            color: #333;
-            margin-bottom: 20px;
-        }
 
         #question {
-            font-size: 3em;
+            font-size: 3.4em;
             margin: 40px;
             font-weight: bold;
-            color: #444;
+            color: #ffffff;
         }
 
         .options {
@@ -46,20 +41,23 @@
         }
 
         .options button {
-            width: 70px;
-            height: 70px;
+            width: 75px;
+            max-width: 100px;
+            border-radius: 4px;
+            border: none;
+            height: 60px;
             font-size: 1.3rem;
             /* Set width for buttons */
-            margin: 10px 0;
+            margin: 10px;
             /* Space between buttons */
         }
 
         .options button:hover {
-            background-color: #ddd;
+            background-color: #cfcfcf;
         }
 
         .options button:active {
-            background-color: #bbb;
+            background-color: #cfcece;
         }
 
         .correct {
@@ -74,8 +72,8 @@
 
         #score {
             margin-top: 30px;
-            font-size: 1.4em;
-            color: #333;
+            font-size: 1.6em;
+            color: #ff6b6b;
             font-weight: bold;
         }
     </style>
@@ -92,11 +90,10 @@
     <div id="score">Score: 0/0</div>
 
     <script>
-        // Tables: 12 to 19 and 27, Squares: 16 to 35, Cubes: 8 to 20
         const tables = [12, 13, 14, 15, 16, 17, 18, 19, 27];
-        const squares = Array.from({ length: 20 }, (_, i) => i + 16); // Numbers 16 to 35
-        const cubes = Array.from({ length: 13 }, (_, i) => i + 8); // Numbers 8 to 20
-        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';  // Alphabet A to Z
+        const squares = Array.from({ length: 20 }, (_, i) => i + 16);
+        const cubes = Array.from({ length: 13 }, (_, i) => i + 8);
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         let correctCount = 0;
         let totalCount = 0;
         let timer;
@@ -108,7 +105,6 @@
 
             while (options.length < 4) {
                 let wrongAnswer = correctAnswer + Math.floor(Math.random() * 100) - 50;
-                // Ensure the wrong answer is close in value and has the same unit digit
                 if (wrongAnswer !== correctAnswer && (wrongAnswer % 10 === unitDigit) && wrongAnswer > 0) {
                     options.push(wrongAnswer);
                 }
@@ -119,7 +115,7 @@
 
         // Generate Random Question
         function generateQuestion() {
-            const questionType = Math.random(); // Decide the question type
+            const questionType = Math.random();
 
             let questionText, correctAnswer;
 
@@ -142,13 +138,10 @@
                 questionText = `${randomLetter}?`;
             }
 
-            // Display question
             document.getElementById('question').innerHTML = questionText;
 
-            // Generate similar options for the current question type
             const options = generateSimilarOptions(correctAnswer);
 
-            // Display options
             for (let i = 0; i < 4; i++) {
                 const button = document.getElementById(`opt${i + 1}`);
                 button.textContent = options[i];
@@ -159,23 +152,22 @@
 
             // Auto-change question after 4 seconds if no answer
             clearTimeout(timer);
-            timer = setTimeout(generateQuestion, 4000);
+            timer = setTimeout(generateQuestion, 3000);
         }
 
         // Check Answer
         function checkAnswer(button, correctAnswer) {
-            clearTimeout(timer); // Clear the auto-next timer
+            clearTimeout(timer);
             totalCount++;
 
             const allButtons = document.querySelectorAll('.options button');
-            allButtons.forEach(btn => btn.disabled = true); // Disable all buttons on answer
+            allButtons.forEach(btn => btn.disabled = true);
 
             if (parseInt(button.textContent) === correctAnswer) {
                 button.className = 'correct';
                 correctCount++;
             } else {
                 button.className = 'wrong';
-                // Highlight correct answer
                 allButtons.forEach(btn => {
                     if (parseInt(btn.textContent) === correctAnswer) {
                         btn.className = 'correct';
@@ -184,7 +176,7 @@
             }
 
             document.getElementById('score').textContent = `Score: ${correctCount}/${totalCount}`;
-            setTimeout(generateQuestion, parseInt(button.textContent) === correctAnswer ? 1000 : 6000);
+            setTimeout(generateQuestion, parseInt(button.textContent) === correctAnswer ? 1000 : 5000);
         }
 
         // Start Quiz
