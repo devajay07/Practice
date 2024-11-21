@@ -94,6 +94,13 @@
         const squares = Array.from({ length: 20 }, (_, i) => i + 16);
         const cubes = Array.from({ length: 13 }, (_, i) => i + 8);
         const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const triplets = [
+            [3, 4, 5], [5, 12, 13], [7, 24, 25], [8, 15, 17], [9, 40, 41],
+            [11, 60, 61], [12, 35, 37], [20, 21, 29], [33, 56, 65], [16, 63, 65],
+            [28, 45, 53], [39, 80, 89], [13, 84, 85], [48, 55, 73], [15, 112, 113],
+            [20, 99, 101], [65, 72, 97], [36, 77, 85]
+        ];
+
         let correctCount = 0;
         let totalCount = 0;
         let timer;
@@ -115,33 +122,52 @@
 
         // Generate Random Question
         function generateQuestion() {
-            const questionType = Math.random();
+            const questionType = Math.random(); // Decide the question type
 
             let questionText, correctAnswer;
 
-            if (questionType < 0.25) { // Table question
+            if (questionType < 0.2) { // Table question
                 const table = tables[Math.floor(Math.random() * tables.length)];
                 const multiplier = Math.floor(Math.random() * 7) + 3; // Multiplier from 3 to 9
                 correctAnswer = table * multiplier;
                 questionText = `${table} x ${multiplier}?`;
-            } else if (questionType < 0.5) { // Square question
+            } else if (questionType < 0.4) { // Square question
                 const num = squares[Math.floor(Math.random() * squares.length)];
                 correctAnswer = num * num;
                 questionText = `${num}<sup>2</sup>`;
-            } else if (questionType < 0.75) { // Cube question
+            } else if (questionType < 0.6) { // Cube question
                 const num = cubes[Math.floor(Math.random() * cubes.length)];
                 correctAnswer = num * num * num;
                 questionText = `${num}<sup>3</sup>`;
-            } else { // Alphabet place value question
-                const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)]; // Random letter
-                correctAnswer = randomLetter.charCodeAt(0) - 64; // Convert letter to place value (A = 1, B = 2, ...)
+            } else if (questionType < 0.8) { // Alphabet place value question
+                const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
+                correctAnswer = randomLetter.charCodeAt(0) - 64;
                 questionText = `${randomLetter}?`;
-            }
+            } else { // Pythagorean triplet question
+                const tripletIndex = Math.floor(Math.random() * triplets.length);
+                correctAnswer = triplets[tripletIndex];
+                questionText = "triplet?";
+                console.log(questionText);
 
+
+                const options = generateTripletOptions(correctAnswer);
+                document.getElementById('question').innerHTML = questionText;
+                for (let i = 0; i < 4; i++) {
+                    const button = document.getElementById(`opt${i + 1}`);
+                    button.textContent = options[i].join(', ');
+                    button.className = ''; // Reset button styles
+                    button.disabled = false; // Enable buttons for new question
+                    button.onclick = () => checkTripletAnswer(button, correctAnswer);
+                }
+
+                return; // Exit early as triplet question requires special handling
+            }
             document.getElementById('question').innerHTML = questionText;
 
+            // Generate similar options for other question types
             const options = generateSimilarOptions(correctAnswer);
 
+            // Display options
             for (let i = 0; i < 4; i++) {
                 const button = document.getElementById(`opt${i + 1}`);
                 button.textContent = options[i];
@@ -154,6 +180,45 @@
             clearTimeout(timer);
             timer = setTimeout(generateQuestion, 3000);
         }
+        // Generate options for Pythagorean triplet question
+        function generateTripletOptions(correctAnswer) {
+            const options = [correctAnswer];
+
+            while (options.length < 4) {
+                const randomTriplet = triplets[Math.floor(Math.random() * triplets.length)];
+                if (!options.some(option => option.join(',') === randomTriplet.join(','))) {
+                    options.push(randomTriplet);
+                }
+            }
+
+            return options.sort(() => Math.random() - 0.5); // Shuffle options
+        }
+
+
+        // Check Answer for Pythagorean triplet question
+        function checkTripletAnswer(button, correctAnswer) {
+            clearTimeout(timer);
+            totalCount++;
+
+            const allButtons = document.querySelectorAll('.options button');
+            allButtons.forEach(btn => btn.disabled = true);
+
+            if (button.textContent === correctAnswer.join(', ')) {
+                button.className = 'correct';
+                correctCount++;
+            } else {
+                button.className = 'wrong';
+                allButtons.forEach(btn => {
+                    if (btn.textContent === correctAnswer.join(', ')) {
+                        btn.className = 'correct';
+                    }
+                });
+            }
+
+            document.getElementById('score').textContent = `Score: ${correctCount}/${totalCount}`;
+            setTimeout(generateQuestion, 1000);
+        }
+
 
         // Check Answer
         function checkAnswer(button, correctAnswer) {
